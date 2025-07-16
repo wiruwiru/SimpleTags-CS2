@@ -1,0 +1,6 @@
+{
+  "prefix": "{yellow}[SimpleTags]{default}",
+  "no_permissions": "{red}No tienes permisos para usar este comando.",
+  "tag_enabled": "Tags {green}habilitados",
+  "tag_disabled": "Tags {red}deshabilitados"
+}
