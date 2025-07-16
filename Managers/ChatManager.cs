@@ -69,6 +69,7 @@ namespace SimpleTags.Managers
             if (player == null || !player.IsValid || player.IsBot || player.IsHLTV) return;
 
             _storageService.OnPlayerDisconnect(player);
+            _tagManager.OnPlayerDisconnect(player);
         }
 
         private HookResult OnPlayerSpawn(EventPlayerSpawn @event, GameEventInfo info)

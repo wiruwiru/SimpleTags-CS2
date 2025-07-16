@@ -71,5 +71,14 @@ namespace SimpleTags.Configs
     {
         [JsonPropertyName("DefaultEnabled")]
         public bool DefaultEnabled { get; set; } = true;
+
+        [JsonPropertyName("TagMethod")]
+        public string TagMethod { get; set; } = "ClanTag"; // "ClanTag" or "Rename"
+    }
+
+    public enum TagMethodType
+    {
+        ClanTag,
+        Rename
     }
 }

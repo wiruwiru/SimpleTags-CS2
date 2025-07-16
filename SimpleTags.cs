@@ -16,7 +16,7 @@ namespace SimpleTags;
 public class SimpleTags : BasePlugin, IPluginConfig<SimpleTagsConfig>
 {
     public override string ModuleName => "SimpleTags";
-    public override string ModuleVersion => "1.0.0";
+    public override string ModuleVersion => "1.0.1";
     public override string ModuleAuthor => "luca.uy";
     public override string ModuleDescription => "Simple tags plugins";
 
@@ -48,10 +48,6 @@ public class SimpleTags : BasePlugin, IPluginConfig<SimpleTagsConfig>
                 _tagManager?.ReloadAllPlayerTags();
             });
         }
-        else
-        {
-
-        }
     }
 
     public override void OnAllPluginsLoaded(bool hotReload)
@@ -70,6 +66,9 @@ public class SimpleTags : BasePlugin, IPluginConfig<SimpleTagsConfig>
 
         InitializeServices();
         _chatManager?.RegisterEvents(this);
+
+        var tagMethod = Config.Settings.TagMethod;
+        Server.PrintToConsole($"[SimpleTags] Scoreboard method: {tagMethod}");
 
         if (hotReload)
         {
@@ -120,6 +119,8 @@ public class SimpleTags : BasePlugin, IPluginConfig<SimpleTagsConfig>
     public override void Unload(bool hotReload)
     {
         _storageService?.ClearCache();
+        _tagManager?.ClearCache();
+
         _storageService = null;
         _tagManager = null;
         _chatManager = null;

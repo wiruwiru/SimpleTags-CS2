@@ -10,28 +10,108 @@ namespace SimpleTags.Managers
     {
         private readonly SimpleTagsConfig _config;
         private readonly ITagStorageService _storageService;
+        private readonly Dictionary<int, string> _originalPlayerNames;
 
         public TagManager(SimpleTagsConfig config, ITagStorageService storageService)
         {
             _config = config;
             _storageService = storageService;
+            _originalPlayerNames = new Dictionary<int, string>();
         }
 
         public void SetPlayerClanTag(CCSPlayerController? player)
         {
             if (player == null || !player.IsValid || player.IsBot || player.IsHLTV || player.AuthorizedSteamID == null) return;
 
-            string tag = "";
-            if (_storageService.IsPlayerTagEnabled(player))
+            if (!_storageService.IsPlayerTagEnabled(player))
             {
-                tag = GetPlayerScoreboardTag(player);
+                if (GetTagMethod() == TagMethodType.Rename)
+                {
+                    RestoreOriginalPlayerName(player);
+                }
+
+                if (!string.IsNullOrEmpty(player.Clan))
+                {
+                    player.Clan = "";
+                    Utilities.SetStateChanged(player, "CCSPlayerController", "m_szClan");
+                }
+                return;
             }
 
-            if (player.Clan != tag)
+            string tag = GetPlayerScoreboardTag(player);
+
+            if (GetTagMethod() == TagMethodType.Rename)
             {
-                player.Clan = tag;
-                Utilities.SetStateChanged(player, "CCSPlayerController", "m_szClan");
+                SetPlayerNameWithTag(player, tag);
+
+                if (!string.IsNullOrEmpty(player.Clan))
+                {
+                    player.Clan = "";
+                    Utilities.SetStateChanged(player, "CCSPlayerController", "m_szClan");
+                }
             }
+            else
+            {
+                if (player.Clan != tag)
+                {
+                    player.Clan = tag;
+                    Utilities.SetStateChanged(player, "CCSPlayerController", "m_szClan");
+                }
+            }
+        }
+
+        private void SetPlayerNameWithTag(CCSPlayerController player, string tag)
+        {
+            if (player?.PlayerName == null) return;
+
+            if (!_originalPlayerNames.ContainsKey(player.Slot))
+            {
+                _originalPlayerNames[player.Slot] = player.PlayerName;
+            }
+
+            string originalName = _originalPlayerNames[player.Slot];
+            string newName = string.IsNullOrEmpty(tag) ? originalName : $"{tag} {originalName}";
+            if (player.PlayerName != newName)
+            {
+                RenamePlayer(player, newName);
+            }
+        }
+
+        private void RestoreOriginalPlayerName(CCSPlayerController player)
+        {
+            if (player?.PlayerName == null) return;
+
+            if (_originalPlayerNames.TryGetValue(player.Slot, out string? originalName))
+            {
+                if (player.PlayerName != originalName)
+                {
+                    RenamePlayer(player, originalName);
+                }
+            }
+        }
+
+        private void RenamePlayer(CCSPlayerController player, string newName)
+        {
+            if (player == null || !player.IsValid || string.IsNullOrEmpty(newName))
+                return;
+
+            try
+            {
+                player.PlayerName = newName;
+            }
+            catch (Exception ex)
+            {
+                Server.PrintToConsole($"[SimpleTags] Error renaming player {player.PlayerName}: {ex.Message}");
+            }
+        }
+
+        private TagMethodType GetTagMethod()
+        {
+            if (string.Equals(_config.Settings.TagMethod, "Rename", StringComparison.OrdinalIgnoreCase))
+            {
+                return TagMethodType.Rename;
+            }
+            return TagMethodType.ClanTag;
         }
 
         private string GetPlayerScoreboardTag(CCSPlayerController player)
@@ -94,6 +174,19 @@ namespace SimpleTags.Managers
             {
                 SetPlayerClanTag(player);
             }
+        }
+
+        public void OnPlayerDisconnect(CCSPlayerController player)
+        {
+            if (player?.IsValid == true)
+            {
+                _originalPlayerNames.Remove(player.Slot);
+            }
+        }
+
+        public void ClearCache()
+        {
+            _originalPlayerNames.Clear();
         }
 
         public TagInfo? GetPlayerTagInfo(CCSPlayerController player)
