@@ -114,7 +114,7 @@ namespace SimpleTags.Managers
             return TagMethodType.ClanTag;
         }
 
-        private string GetPlayerScoreboardTag(CCSPlayerController player)
+        public string GetPlayerScoreboardTag(CCSPlayerController player)
         {
             string steamid = player.SteamID!.ToString();
             if (_config.Tags.TryGetValue(steamid, out var playerTag))

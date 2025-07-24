@@ -16,7 +16,7 @@ namespace SimpleTags;
 public class SimpleTags : BasePlugin, IPluginConfig<SimpleTagsConfig>
 {
     public override string ModuleName => "SimpleTags";
-    public override string ModuleVersion => "1.0.1";
+    public override string ModuleVersion => "1.0.2";
     public override string ModuleAuthor => "luca.uy";
     public override string ModuleDescription => "Simple tags plugins";
 
@@ -80,7 +80,7 @@ public class SimpleTags : BasePlugin, IPluginConfig<SimpleTagsConfig>
     {
         _storageService = new PlayerSettingsTagStorage(_settingsApi);
         _tagManager = new TagManager(Config, _storageService);
-        _chatManager = new ChatManager(_tagManager, _storageService);
+        _chatManager = new ChatManager(_tagManager, _storageService, Config);
         _ = InitializeStorageAsync();
     }
 

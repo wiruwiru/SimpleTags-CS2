@@ -4,8 +4,10 @@ using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Utils;
 using CounterStrikeSharp.API.Modules.Entities;
-using SimpleTags.Services;
 using System.Reflection;
+
+using SimpleTags.Services;
+using SimpleTags.Configs;
 
 namespace SimpleTags.Managers
 {
@@ -13,11 +15,13 @@ namespace SimpleTags.Managers
     {
         private readonly TagManager _tagManager;
         private readonly ITagStorageService _storageService;
+        private readonly SimpleTagsConfig _config;
 
-        public ChatManager(TagManager tagManager, ITagStorageService storageService)
+        public ChatManager(TagManager tagManager, ITagStorageService storageService, SimpleTagsConfig config)
         {
             _tagManager = tagManager;
             _storageService = storageService;
+            _config = config;
         }
 
         public void RegisterEvents(BasePlugin plugin)
@@ -116,7 +120,8 @@ namespace SimpleTags.Managers
                 return HookResult.Continue;
 
             string deadIcon = !player.PawnIsAlive ? $"{ChatColors.White}☠ {ChatColors.Default}" : "";
-            string message = $" {deadIcon}{tagInfo.Prefix}{tagInfo.NickColor}{player.PlayerName}{ChatColors.Default}: {tagInfo.MessageColor}{info.GetArg(1)}";
+            string cleanPlayerName = GetCleanPlayerName(player);
+            string message = $" {deadIcon}{tagInfo.Prefix}{tagInfo.NickColor}{cleanPlayerName}{ChatColors.Default}: {tagInfo.MessageColor}{info.GetArg(1)}";
 
             if (tagInfo.IsEveryoneTag && !tagInfo.TeamChatEnabled)
                 return HookResult.Continue;
@@ -132,9 +137,10 @@ namespace SimpleTags.Managers
 
             if (info.GetArg(1).StartsWith("@") && AdminManager.PlayerHasPermissions(player, "@css/chat"))
             {
+                string adminCleanName = GetCleanPlayerName(player);
                 foreach (var p in Utilities.GetPlayers().Where(p => p.IsValid && !p.IsBot && !p.IsHLTV && AdminManager.PlayerHasPermissions(p, "@css/chat")))
                 {
-                    p.PrintToChat($" {ChatColors.Lime}(ADMIN) {ChatColors.Default}{player.PlayerName}: {info.GetArg(1).Remove(0, 1)}");
+                    p.PrintToChat($" {ChatColors.Lime}(ADMIN) {ChatColors.Default}{adminCleanName}: {info.GetArg(1).Remove(0, 1)}");
                 }
                 return HookResult.Handled;
             }
@@ -152,13 +158,41 @@ namespace SimpleTags.Managers
                 return HookResult.Continue;
 
             string deadIcon = !player.PawnIsAlive ? $"{ChatColors.White}☠ {ChatColors.Default}" : "";
+            string cleanPlayerName = GetCleanPlayerName(player);
             foreach (var p in Utilities.GetPlayers().Where(p => p.TeamNum == player.TeamNum && p.IsValid && !p.IsBot))
             {
-                string messageToSend = $"{deadIcon}{TeamName(player.TeamNum)} {ChatColors.Default}{tagInfo.Prefix}{tagInfo.NickColor}{player.PlayerName}{ChatColors.Default}: {tagInfo.MessageColor}{info.GetArg(1)}";
+                string messageToSend = $"{deadIcon}{TeamName(player.TeamNum)} {ChatColors.Default}{tagInfo.Prefix}{tagInfo.NickColor}{cleanPlayerName}{ChatColors.Default}: {tagInfo.MessageColor}{info.GetArg(1)}";
                 p.PrintToChat($" {ReplaceTags(messageToSend, p.TeamNum)}");
             }
 
             return HookResult.Handled;
+        }
+
+        private string GetCleanPlayerName(CCSPlayerController player)
+        {
+            if (player?.PlayerName == null)
+                return "";
+
+            if (!IsUsingRenameMethod())
+                return player.PlayerName;
+
+            string scoreboardTag = _tagManager.GetPlayerScoreboardTag(player);
+
+            if (string.IsNullOrEmpty(scoreboardTag))
+                return player.PlayerName;
+
+            string tagWithSpace = $"{scoreboardTag} ";
+            if (player.PlayerName.StartsWith(tagWithSpace))
+            {
+                return player.PlayerName.Substring(tagWithSpace.Length);
+            }
+
+            return player.PlayerName;
+        }
+
+        private bool IsUsingRenameMethod()
+        {
+            return string.Equals(_config.Settings.TagMethod, "Rename", StringComparison.OrdinalIgnoreCase);
         }
 
         private static string TeamName(int teamNum)
