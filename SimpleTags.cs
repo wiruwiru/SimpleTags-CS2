@@ -12,11 +12,11 @@ using SimpleTags.Managers;
 
 namespace SimpleTags;
 
-[MinimumApiVersion(318)]
+[MinimumApiVersion(354)]
 public class SimpleTags : BasePlugin, IPluginConfig<SimpleTagsConfig>
 {
     public override string ModuleName => "SimpleTags";
-    public override string ModuleVersion => "1.0.2";
+    public override string ModuleVersion => "1.0.3";
     public override string ModuleAuthor => "luca.uy";
     public override string ModuleDescription => "Simple tags plugins";
 
