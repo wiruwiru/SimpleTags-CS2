@@ -126,6 +126,14 @@ namespace SimpleTags.Managers
             if (tagInfo.IsEveryoneTag && !tagInfo.TeamChatEnabled)
                 return HookResult.Continue;
 
+            int senderTeam = player.TeamNum;
+            if (senderTeam == 0 || senderTeam == 1)
+            {
+                foreach (var p in Utilities.GetPlayers().Where(p => p.IsValid && !p.IsBot && !p.IsHLTV && (p.TeamNum == 0 || p.TeamNum == 1)))
+                    p.PrintToChat(ReplaceTags(message, p.TeamNum));
+                return HookResult.Handled;
+            }
+
             Server.PrintToChatAll(ReplaceTags(message, player.TeamNum));
             return HookResult.Handled;
         }
