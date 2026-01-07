@@ -16,9 +16,9 @@ namespace SimpleTags;
 public class SimpleTags : BasePlugin, IPluginConfig<SimpleTagsConfig>
 {
     public override string ModuleName => "SimpleTags";
-    public override string ModuleVersion => "1.0.3";
+    public override string ModuleVersion => "1.0.4";
     public override string ModuleAuthor => "luca.uy";
-    public override string ModuleDescription => "Simple tags plugins";
+    public override string ModuleDescription => "Set tags to player in scoreboard and chat";
 
     public SimpleTagsConfig Config { get; set; } = new();
     private ITagStorageService? _storageService;
@@ -134,8 +134,12 @@ public class SimpleTags : BasePlugin, IPluginConfig<SimpleTagsConfig>
 
         if (!string.IsNullOrEmpty(Config.CommandPermissions) && !AdminManager.PlayerHasPermissions(player, Config.CommandPermissions))
         {
-            commandInfo.ReplyToCommand($"{Localizer["prefix"]} {Localizer["no_permissions"]}");
-            return;
+            bool hasSteamID64Access = Config.SteamID64CommandAccess && _tagManager != null && _tagManager.HasSteamID64Tag(player);
+            if (!hasSteamID64Access)
+            {
+                commandInfo.ReplyToCommand($"{Localizer["prefix"]} {Localizer["no_permissions"]}");
+                return;
+            }
         }
 
         if (_storageService == null || _tagManager == null)

@@ -11,6 +11,9 @@ namespace SimpleTags.Configs
         [JsonPropertyName("CommandPermissions")]
         public string CommandPermissions { get; set; } = "";
 
+        [JsonPropertyName("SteamID64CommandAccess")]
+        public bool SteamID64CommandAccess { get; set; } = true;
+
         [JsonPropertyName("Tags")]
         public Dictionary<string, TagConfiguration> Tags { get; set; } = new Dictionary<string, TagConfiguration>
         {

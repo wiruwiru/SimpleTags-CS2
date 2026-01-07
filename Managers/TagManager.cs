@@ -189,6 +189,15 @@ namespace SimpleTags.Managers
             _originalPlayerNames.Clear();
         }
 
+        public bool HasSteamID64Tag(CCSPlayerController player)
+        {
+            if (player?.AuthorizedSteamID == null)
+                return false;
+
+            string steamid = player.AuthorizedSteamID.SteamId64.ToString();
+            return _config.Tags.ContainsKey(steamid);
+        }
+
         public TagInfo? GetPlayerTagInfo(CCSPlayerController player)
         {
             if (player?.AuthorizedSteamID == null)
