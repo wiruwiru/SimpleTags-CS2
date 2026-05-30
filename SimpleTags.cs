@@ -12,11 +12,11 @@ using SimpleTags.Managers;
 
 namespace SimpleTags;
 
-[MinimumApiVersion(354)]
+[MinimumApiVersion(369)]
 public class SimpleTags : BasePlugin, IPluginConfig<SimpleTagsConfig>
 {
     public override string ModuleName => "SimpleTags";
-    public override string ModuleVersion => "1.0.4";
+    public override string ModuleVersion => "1.0.5";
     public override string ModuleAuthor => "luca.uy";
     public override string ModuleDescription => "Set tags to player in scoreboard and chat";
 
