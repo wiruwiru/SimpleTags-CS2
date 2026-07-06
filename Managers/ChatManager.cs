@@ -121,7 +121,8 @@ namespace SimpleTags.Managers
 
             string deadIcon = !player.PawnIsAlive ? $"{ChatColors.White}☠ {ChatColors.Default}" : "";
             string cleanPlayerName = GetCleanPlayerName(player);
-            string message = $" {deadIcon}{tagInfo.Prefix}{tagInfo.NickColor}{cleanPlayerName}{ChatColors.Default}: {tagInfo.MessageColor}{info.GetArg(1)}";
+            string fullMessage = string.Join(" ", Enumerable.Range(1, info.ArgCount - 1).Select(i => info.GetArg(i)));
+            string message = $" {deadIcon}{tagInfo.Prefix}{tagInfo.NickColor}{cleanPlayerName}{ChatColors.Default}: {tagInfo.MessageColor}{fullMessage}";
 
             if (tagInfo.IsEveryoneTag && !tagInfo.TeamChatEnabled)
                 return HookResult.Continue;
@@ -167,9 +168,10 @@ namespace SimpleTags.Managers
 
             string deadIcon = !player.PawnIsAlive ? $"{ChatColors.White}☠ {ChatColors.Default}" : "";
             string cleanPlayerName = GetCleanPlayerName(player);
+            string fullMessage = string.Join(" ", Enumerable.Range(1, info.ArgCount - 1).Select(i => info.GetArg(i)));
             foreach (var p in Utilities.GetPlayers().Where(p => p.TeamNum == player.TeamNum && p.IsValid && !p.IsBot))
             {
-                string messageToSend = $"{deadIcon}{TeamName(player.TeamNum)} {ChatColors.Default}{tagInfo.Prefix}{tagInfo.NickColor}{cleanPlayerName}{ChatColors.Default}: {tagInfo.MessageColor}{info.GetArg(1)}";
+                string messageToSend = $"{deadIcon}{TeamName(player.TeamNum)} {ChatColors.Default}{tagInfo.Prefix}{tagInfo.NickColor}{cleanPlayerName}{ChatColors.Default}: {tagInfo.MessageColor}{fullMessage}";
                 p.PrintToChat($" {ReplaceTags(messageToSend, p.TeamNum)}");
             }
 
